@@ -5,9 +5,12 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
+#include <iomanip>
+#include <limits>
 #include <list>
 #include <map>
 #include <set>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -28,6 +31,8 @@
 #define EXPAND7(...) EXPAND6 L_PAR __VA_ARGS__ R_PAR
 #define EXPAND8(...) EXPAND7 L_PAR __VA_ARGS__ R_PAR
 #define EXPAND9(...) EXPAND8 L_PAR __VA_ARGS__ R_PAR
+
+#define CASE(VALUE, BODY) case VALUE: BODY; break;
 
 template<typename FUNCTION, typename TUPLE>
 constexpr decltype(auto) apply_ordered(FUNCTION&& f, TUPLE&& t) {

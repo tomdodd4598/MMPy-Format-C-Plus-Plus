@@ -31,46 +31,75 @@ MMPY_FORMAT_SIMPLE1(py, T, LV, RV)\
 
 #define MMPY_FORMAT_SCALAR(T, VALUE) MMPY_FORMAT_SIMPLE(T, VALUE, VALUE)
 
-#define MMPY_FORMAT_NUM(T) MMPY_FORMAT_SCALAR(T, std::to_string(v))
+// Modified from https://stackoverflow.com/a/16606128/16920912
+namespace {
+	template<typename T>
+	std::string py_precision_string(T&& v) {
+		std::stringstream ss;
+		ss << std::setprecision(std::numeric_limits<std::remove_cvref_t<T>>::digits10);
+		ss << v;
+		return ss.str();
+	}
 
-MMPY_FORMAT_NUM(short)
-MMPY_FORMAT_NUM(unsigned short)
-MMPY_FORMAT_NUM(int)
-MMPY_FORMAT_NUM(unsigned)
-MMPY_FORMAT_NUM(long)
-MMPY_FORMAT_NUM(unsigned long)
-MMPY_FORMAT_NUM(long long)
-MMPY_FORMAT_NUM(unsigned long long)
+	template<typename T>
+	std::string mm_precision_string(T&& v) {
+		auto str = py_precision_string(v);
+		auto e_index = str.find('e');
+		if (e_index == std::string::npos) {
+			return str;
+		}
+		std::stringstream ss;
+		ss << str.substr(0, e_index) << "*10^" << std::stoi(str.substr(e_index + 1, str.size()));
+		return ss.str();
+	}
+}
 
-MMPY_FORMAT_NUM(float)
-MMPY_FORMAT_NUM(double)
-MMPY_FORMAT_NUM(long double)
+#define MMPY_FORMAT_INT(T) MMPY_FORMAT_SCALAR(T, std::to_string(v))
+
+MMPY_FORMAT_INT(short)
+MMPY_FORMAT_INT(unsigned short)
+MMPY_FORMAT_INT(int)
+MMPY_FORMAT_INT(unsigned)
+MMPY_FORMAT_INT(long)
+MMPY_FORMAT_INT(unsigned long)
+MMPY_FORMAT_INT(long long)
+MMPY_FORMAT_INT(unsigned long long)
+
+#define MMPY_FORMAT_FLOAT0(MMPY, T, VALUE)\
+MMPY_FORMAT_SIMPLE0(MMPY, T, const&, VALUE)\
+MMPY_FORMAT_SIMPLE0(MMPY, T, &&, VALUE)\
+
+#define MMPY_FORMAT_FLOAT(T)\
+MMPY_FORMAT_FLOAT0(mm, T, mm_precision_string(v))\
+MMPY_FORMAT_FLOAT0(py, T, py_precision_string(v))\
+
+MMPY_FORMAT_FLOAT(float)
+MMPY_FORMAT_FLOAT(double)
+MMPY_FORMAT_FLOAT(long double)
 
 MMPY_FORMAT_SCALAR(bool, v ? "True" : "False")
 
-#define CASE(VALUE, BODY) case VALUE: BODY; break;
-
-// Modified from https://stackoverflow.com/a/7369771
+// Modified from https://stackoverflow.com/a/7369771/16920912
 namespace {
 	std::string unescape_char(char ch) {
 		if (isprint(ch) && ch != '\'' && ch != '\"' && ch != '\\' && ch != '\?') {
-			return std::string{ch};
+			return std::string{ ch };
 		}
 
 		switch (ch) {
 			CASE('\a', return "\\a")
-				CASE('\b', return "\\b")
-				CASE('\f', return "\\f")
-				CASE('\n', return "\\n")
-				CASE('\r', return "\\r")
-				CASE('\t', return "\\t")
-				CASE('\v', return "\\v")
-				CASE('\\', return "\\\\")
-				CASE('\'', return "\\'")
-				CASE('\"', return "\\\"")
-				CASE('\?', return "\\\?")
+			CASE('\b', return "\\b")
+			CASE('\f', return "\\f")
+			CASE('\n', return "\\n")
+			CASE('\r', return "\\r")
+			CASE('\t', return "\\t")
+			CASE('\v', return "\\v")
+			CASE('\\', return "\\\\")
+			CASE('\'', return "\\'")
+			CASE('\"', return "\\\"")
+			CASE('\?', return "\\\?")
 		default:
-			return std::string{ch};
+			return std::string{ ch };
 		}
 	}
 
@@ -100,7 +129,7 @@ MMPY_FORMAT_STRING0(MMPY, T, &&, DELIM, RV)\
 MMPY_FORMAT_STRING1(mm, T, "\"", LV, RV)\
 MMPY_FORMAT_STRING1(py, T, "'", LV, RV)\
 
-MMPY_FORMAT_STRING(char, std::string{v}, std::string{v})
+MMPY_FORMAT_STRING(char, std::string{ v }, std::string{ v })
 MMPY_FORMAT_STRING(char*, std::string(v), std::string(v))
 MMPY_FORMAT_STRING(char const*, std::string(v), std::string(v))
 MMPY_FORMAT_STRING(std::string, v, std::move(v))

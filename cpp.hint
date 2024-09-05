@@ -17,7 +17,10 @@
 
 #define MMPY_FORMAT_SCALAR(T, VALUE)
 
-#define MMPY_FORMAT_NUM(T)
+#define MMPY_FORMAT_INT(T)
+
+#define MMPY_FORMAT_FLOAT0(MMPY, T, VALUE)
+#define MMPY_FORMAT_FLOAT(T)
 
 #define CASE(VALUE, BODY)
 
