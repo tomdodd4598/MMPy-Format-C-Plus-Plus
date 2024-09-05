@@ -5,7 +5,7 @@
 
 #define TEST(MMPY, STR)\
 std::cout << #STR":\n";\
-apply_ordered([](auto const& x) {std::cout << MMPY##_format(x) << "\n";}, xs);\
+dodd::apply_ordered([](auto const& x) {std::cout << dodd::MMPY##_format(x) << "\n";}, xs);\
 std::cout << std::endl;\
 
 int main() {

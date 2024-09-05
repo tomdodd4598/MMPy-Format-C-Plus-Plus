@@ -1,12 +1,14 @@
-#ifndef MMPY_FORMAT_H
-#define MMPY_FORMAT_H
+#ifndef DODD_MMPY_FORMAT_H
+#define DODD_MMPY_FORMAT_H
 
 #include "helpers.h"
 
 #define MMPY_FORMAT_PTR0(MMPY, PTR)\
-template<typename T>\
-std::string MMPY##_format(T PTR v) {\
-	return *v;\
+namespace dodd {\
+	template<typename T>\
+	std::string MMPY##_format(T PTR v) {\
+		return *v;\
+	}\
 }\
 
 #define MMPY_FORMAT_PTR(PTR)\
@@ -17,8 +19,10 @@ MMPY_FORMAT_PTR(*)
 MMPY_FORMAT_PTR(const*)
 
 #define MMPY_FORMAT_SIMPLE0(MMPY, T, REF, VALUE)\
-std::string MMPY##_format(T REF v) {\
-	return VALUE;\
+namespace dodd {\
+	std::string MMPY##_format(T REF v) {\
+		return VALUE;\
+	}\
 }\
 
 #define MMPY_FORMAT_SIMPLE1(MMPY, T, LV, RV)\
@@ -114,11 +118,13 @@ namespace {
 }
 
 #define MMPY_FORMAT_STRING0(MMPY, T, REF, DELIM, VALUE)\
-std::string MMPY##_format(T REF v) {\
-	std::string str = DELIM;\
-	str += unescape(VALUE);\
-	str += DELIM;\
-	return str;\
+namespace dodd {\
+	std::string MMPY##_format(T REF v) {\
+		std::string str = DELIM;\
+		str += unescape(VALUE);\
+		str += DELIM;\
+		return str;\
+	}\
 }\
 
 #define MMPY_FORMAT_STRING1(MMPY, T, DELIM, LV, RV)\
@@ -135,23 +141,25 @@ MMPY_FORMAT_STRING(char const*, std::string(v), std::string(v))
 MMPY_FORMAT_STRING(std::string, v, std::move(v))
 
 #define MMPY_FORMAT_ITERABLE0(MMPY, TEMPLATE, TYPE, REF, PRE, START, DELIM, POST, END)\
-template<TEMPLATE>\
-std::string MMPY##_format(TYPE REF v) {\
-	PRE;\
-	std::string str = START;\
-	bool begin = true;\
-	for (auto const& e : v) {\
-		if (begin) {\
-			begin = false;\
+namespace dodd {\
+	template<TEMPLATE>\
+	std::string MMPY##_format(TYPE REF v) {\
+		PRE;\
+		std::string str = START;\
+		bool begin = true;\
+		for (auto const& e : v) {\
+			if (begin) {\
+				begin = false;\
+			}\
+			else {\
+				str += DELIM;\
+			}\
+			str += MMPY##_format(e);\
 		}\
-		else {\
-			str += DELIM;\
-		}\
-		str += MMPY##_format(e);\
+		POST;\
+		str += END;\
+		return str;\
 	}\
-	POST;\
-	str += END;\
-	return str;\
 }\
 
 #define MMPY_FORMAT_ITERABLE1(MMPY, TEMPLATE, TYPE, PRE, START, DELIM, POST, END)\
@@ -177,23 +185,25 @@ MMPY_FORMAT_SET(mm, {}, "{", ",", {}, "}")
 MMPY_FORMAT_SET(py, if (v.empty()) return "set()", "{", ", ", {}, "}")
 
 #define MMPY_FORMAT_MAP0(MMPY, TYPE, REF, PRE, START, DELIM, SEP, POST, END)\
-template<typename K, typename V>\
-std::string MMPY##_format(TYPE<K, V> REF v) {\
-	std::string str = START;\
-	bool begin = true;\
-	for (auto const& e : v) {\
-		if (begin) {\
-			begin = false;\
+namespace dodd {\
+	template<typename K, typename V>\
+	std::string MMPY##_format(TYPE<K, V> REF v) {\
+		std::string str = START;\
+		bool begin = true;\
+		for (auto const& e : v) {\
+			if (begin) {\
+				begin = false;\
+			}\
+			else {\
+				str += DELIM;\
+			}\
+			str += MMPY##_format(e.first);\
+			str += SEP;\
+			str += MMPY##_format(e.second);\
 		}\
-		else {\
-			str += DELIM;\
-		}\
-		str += MMPY##_format(e.first);\
-		str += SEP;\
-		str += MMPY##_format(e.second);\
+		str += END;\
+		return str;\
 	}\
-	str += END;\
-	return str;\
 }\
 
 #define MMPY_FORMAT_MAP1(MMPY, TYPE, PRE, START, DELIM, SEP, POST, END)\
@@ -208,24 +218,26 @@ MMPY_FORMAT_MAP(mm, {}, "<|", ",", "->", {}, "|>")
 MMPY_FORMAT_MAP(py, {}, "{", ", ", ": ", {}, "}")
 
 #define MMPY_FORMAT_TUPLE0(MMPY, REF, PRE, START, DELIM, POST, END)\
-template<typename... T>\
-std::string MMPY##_format(std::tuple<T...> REF v) {\
-	PRE;\
-	std::string str = START;\
-	bool begin = true;\
-	auto f = [&](auto const& e) {\
-		if (begin) {\
-			begin = false;\
-		}\
-		else {\
-			str += DELIM;\
-		}\
-		str += MMPY##_format(e);\
-	};\
-	apply_ordered([&](auto const& e) {f(e);}, v);\
-	POST;\
-	str += END;\
-	return str;\
+namespace dodd {\
+	template<typename... T>\
+	std::string MMPY##_format(std::tuple<T...> REF v) {\
+		PRE;\
+		std::string str = START;\
+		bool begin = true;\
+		auto f = [&](auto const& e) {\
+			if (begin) {\
+				begin = false;\
+			}\
+			else {\
+				str += DELIM;\
+			}\
+			str += MMPY##_format(e);\
+		};\
+		apply_ordered([&](auto const& e) {f(e);}, v);\
+		POST;\
+		str += END;\
+		return str;\
+	}\
 }\
 
 #define MMPY_FORMAT_TUPLE(MMPY, PRE, START, DELIM, POST, END)\

@@ -1,5 +1,5 @@
-#ifndef MMPY_HELPERS_H
-#define MMPY_HELPERS_H
+#ifndef DODD_MMPY_HELPERS_H
+#define DODD_MMPY_HELPERS_H
 
 #include <array>
 #include <concepts>
@@ -34,9 +34,11 @@
 
 #define CASE(VALUE, BODY) case VALUE: BODY; break;
 
-template<typename FUNCTION, typename TUPLE>
-constexpr decltype(auto) apply_ordered(FUNCTION&& f, TUPLE&& t) {
-	std::apply([&](auto const&... x) {(..., f(x));}, t);
+namespace dodd {
+	template<typename FUNCTION, typename TUPLE>
+	constexpr decltype(auto) apply_ordered(FUNCTION&& f, TUPLE&& t) {
+		std::apply([&](auto const&... x) {(..., f(x)); }, t);
+	}
 }
 
 #endif
